@@ -1,203 +1,128 @@
-import Head from 'next/head'
+import Layout from "../components/layouts/layout";
+import styled from "@emotion/styled";
+import { useContext, useState } from "react";
+import { FirebaseContext } from "../firebase/index";
+import useForm from "../components/hooks/useForm";
+import { registerValidation } from "../components/validation/validation";
+import {
+  Form,
+  Button,
+  Input,
+  ErrorField,
+  Error
+} from "../components/ui/components";
+import Link from "next/link";
+import { useRouter } from "next/router";
 
-const Home = () => (
-  <div className="container">
-    <Head>
-      <title>Create Next App</title>
-      <link rel="icon" href="/favicon.ico" />
-    </Head>
+const Home = () => {
+  const [error, setError] = useState(false);
+  const { auth, firebase } = useContext(FirebaseContext);
+  const router = useRouter();
+  if (auth) router.push("/upload");
 
-    <main>
-      <h1 className="title">
-        Welcome to <a href="https://nextjs.org">Next.js!</a>
-      </h1>
+  const user = {
+    username: "",
+    email: "",
+    password: ""
+  };
 
-      <p className="description">
-        Get started by editing <code>pages/index.js</code>
-      </p>
-
-      <div className="grid">
-        <a href="https://nextjs.org/docs" className="card">
-          <h3>Documentation &rarr;</h3>
-          <p>Find in-depth information about Next.js features and API.</p>
-        </a>
-
-        <a href="https://nextjs.org/learn" className="card">
-          <h3>Learn &rarr;</h3>
-          <p>Learn about Next.js in an interactive course with quizzes!</p>
-        </a>
-
-        <a
-          href="https://github.com/zeit/next.js/tree/master/examples"
-          className="card"
-        >
-          <h3>Examples &rarr;</h3>
-          <p>Discover and deploy boilerplate example Next.js projects.</p>
-        </a>
-
-        <a
-          href="https://zeit.co/new?filter=next.js&utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-          className="card"
-        >
-          <h3>Deploy &rarr;</h3>
+  const onRegister = async () => {
+    try {
+      await firebase.register(username, email, password);
+      router.replace("/updateprofile");
+    } catch (error) {
+      setError(true);
+      console.log(error.message);
+    }
+  };
+  const { values, errors, onHandleChange, onHandleSubmit } = useForm(
+    user,
+    registerValidation,
+    onRegister
+  );
+  const { email, password, username } = values;
+  return (
+    <Layout>
+      <Container>
+        <img src="/static/img/celulares.png" className="logo" />
+        <FormContainer>
+          <h3 className="title-logo">Clontagram</h3>
+          <p>Sign up to see photos and videos from your friends.</p>
+          <Form onSubmit={onHandleSubmit}>
+            {error && <Error>User already exists</Error>}
+            <Input
+              placeholder="Username"
+              value={username}
+              name="username"
+              onChange={onHandleChange}
+            />
+            {errors.username && <ErrorField>{errors.username}</ErrorField>}
+            <Input
+              placeholder="Email"
+              value={email}
+              name="email"
+              onChange={onHandleChange}
+            />
+            {errors.email && <ErrorField>{errors.email}</ErrorField>}
+            <Input
+              placeholder="Password"
+              value={password}
+              name="password"
+              type="password"
+              onChange={onHandleChange}
+            />
+            {errors.password && <ErrorField>{errors.password}</ErrorField>}
+            <Button bgColor="true">Sign up</Button>
+          </Form>
           <p>
-            Instantly deploy your Next.js site to a public URL with ZEIT Now.
+            By signing up, you agree to our Terms , Data Policy and Cookies
+            Policy .
           </p>
-        </a>
-      </div>
-    </main>
+          <span>
+            Have an account?{" "}
+            <Link href="/login">
+              <a>Log in</a>
+            </Link>
+          </span>
+        </FormContainer>
+      </Container>
+    </Layout>
+  );
+};
 
-    <footer>
-      <a
-        href="https://zeit.co?utm_source=create-next-app&utm_medium=default-template&utm_campaign=create-next-app"
-        target="_blank"
-        rel="noopener noreferrer"
-      >
-        Powered by <img src="/zeit.svg" alt="ZEIT Logo" />
-      </a>
-    </footer>
+const Container = styled.div`
+  width: 95%;
+  max-width: 800px;
+  margin: 80px auto;
+  display: flex;
+  justify-content: center;
+  .logo {
+    flex: 1;
+    margin-top: 30px;
+    @media (max-width: 875px) {
+      display: none;
+    }
+  }
+`;
+const FormContainer = styled.div`
+  flex-basis: 290px;
+  padding: 18px;
+  margin-left: 20px;
+  text-align: center;
+  border-top: 0.5px solid #ccc;
+  p {
+    margin: 10px 0;
+    color: #999999;
+    font-weight: 700;
+    letter-spacing: 0.8px;
+    font-size: 1.7rem;
+    :last-of-type {
+      font-size: 1.5rem;
+      font-weight: 100;
+      letter-spacing: 0.3px;
+      padding-bottom: 20px;
+    }
+  }
+`;
 
-    <style jsx>{`
-      .container {
-        min-height: 100vh;
-        padding: 0 0.5rem;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-      }
-
-      main {
-        padding: 5rem 0;
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-        justify-content: center;
-        align-items: center;
-      }
-
-      footer {
-        width: 100%;
-        height: 100px;
-        border-top: 1px solid #eaeaea;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      footer img {
-        margin-left: 0.5rem;
-      }
-
-      footer a {
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      a {
-        color: inherit;
-        text-decoration: none;
-      }
-
-      .title a {
-        color: #0070f3;
-        text-decoration: none;
-      }
-
-      .title a:hover,
-      .title a:focus,
-      .title a:active {
-        text-decoration: underline;
-      }
-
-      .title {
-        margin: 0;
-        line-height: 1.15;
-        font-size: 4rem;
-      }
-
-      .title,
-      .description {
-        text-align: center;
-      }
-
-      .description {
-        line-height: 1.5;
-        font-size: 1.5rem;
-      }
-
-      code {
-        background: #fafafa;
-        border-radius: 5px;
-        padding: 0.75rem;
-        font-size: 1.1rem;
-        font-family: Menlo, Monaco, Lucida Console, Liberation Mono,
-          DejaVu Sans Mono, Bitstream Vera Sans Mono, Courier New, monospace;
-      }
-
-      .grid {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        flex-wrap: wrap;
-
-        max-width: 800px;
-        margin-top: 3rem;
-      }
-
-      .card {
-        margin: 1rem;
-        flex-basis: 45%;
-        padding: 1.5rem;
-        text-align: left;
-        color: inherit;
-        text-decoration: none;
-        border: 1px solid #eaeaea;
-        border-radius: 10px;
-        transition: color 0.15s ease, border-color 0.15s ease;
-      }
-
-      .card:hover,
-      .card:focus,
-      .card:active {
-        color: #0070f3;
-        border-color: #0070f3;
-      }
-
-      .card h3 {
-        margin: 0 0 1rem 0;
-        font-size: 1.5rem;
-      }
-
-      .card p {
-        margin: 0;
-        font-size: 1.25rem;
-        line-height: 1.5;
-      }
-
-      @media (max-width: 600px) {
-        .grid {
-          width: 100%;
-          flex-direction: column;
-        }
-      }
-    `}</style>
-
-    <style jsx global>{`
-      html,
-      body {
-        padding: 0;
-        margin: 0;
-        font-family: -apple-system, BlinkMacSystemFont, Segoe UI, Roboto, Oxygen,
-          Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-      }
-
-      * {
-        box-sizing: border-box;
-      }
-    `}</style>
-  </div>
-)
-
-export default Home
+export default Home;
